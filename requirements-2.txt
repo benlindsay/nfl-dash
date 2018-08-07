@@ -13,3 +13,5 @@ pathlib2
 # project-specific external requirements
 nflgame
 jupyter
+numpy
+pandas
