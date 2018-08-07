@@ -9,6 +9,7 @@ BUCKET = [OPTIONAL] your-bucket-for-syncing-data (do not include 's3://')
 PROFILE = default
 PROJECT_NAME = nfl-dash
 PYTHON_INTERPRETER = python
+NFL_SEASON = 2017
 
 #################################################################################
 # COMMANDS                                                                      #
@@ -22,6 +23,9 @@ requirements-3: test_environment
 	pip install -r requirements-3.txt
 
 ## Make Dataset
+raw-data: src/data/make_raw_data.py
+	$(PYTHON_INTERPRETER) $< $(NFL_SEASON)
+
 data: requirements-2
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py
 
