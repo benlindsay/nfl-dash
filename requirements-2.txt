@@ -1,0 +1,15 @@
+# local package
+-e .
+
+# general external requirements
+click
+flake8
+pylint
+python-dotenv>=0.5.1
+
+# backwards compatibility
+pathlib2
+
+# project-specific external requirements
+nflgame
+jupyter
