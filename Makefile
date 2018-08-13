@@ -27,8 +27,11 @@ requirements-3: test_environment
 raw-data: src/data/make_raw_data.py
 	$(PYTHON_INTERPRETER) $< $(NFL_SEASON) $(PPR)
 
-data: requirements-2
-	$(PYTHON_INTERPRETER) src/data/make_dataset.py
+scores-one-year: requirements-2
+	$(PYTHON_INTERPRETER) src/data/make_dataset.py $(NFL_SEASON) $(NFL_SEASON)
+
+scores-all-years: requirements-2
+	$(PYTHON_INTERPRETER) src/data/make_dataset.py 2009 $(NFL_SEASON)
 
 ## Delete all compiled Python files
 clean:
