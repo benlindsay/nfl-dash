@@ -93,9 +93,12 @@ def get_player_and_team_data(year, week, ppr=True):
     for player in players:
         i_row = len(df)
         df.loc[i_row, 'week'] = week
-        df.loc[i_row, 'player'] = player
+        df.loc[i_row, 'player'] = player.name
         df.loc[i_row, 'team'] = player.team
         df.loc[i_row, 'position'] = player.guess_position
+        df.loc[i_row, 'defense_two_pt_return'] = (
+            defense_two_pt_returns_dict['players'][player.name]
+        )
         for stat in player._stats:
             if stat in player_scoring_dict:
                 df.loc[i_row, stat] = getattr(player, stat)
