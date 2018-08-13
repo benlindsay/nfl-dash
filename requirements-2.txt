@@ -2,6 +2,7 @@
 -e .
 
 # general external requirements
+autopep8
 click
 flake8
 pylint
