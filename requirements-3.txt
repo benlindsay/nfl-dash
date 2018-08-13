@@ -1,6 +1,3 @@
-# local package
--e .
-
 # general external requirements
 click
 Sphinx
@@ -10,9 +7,12 @@ flake8
 pylint
 python-dotenv>=0.5.1
 
-# backwards compatibility
-pathlib2
-
 # project-specific external requirements
-nfldash
+dash
+dash-renderer
+dash-html-components
+dash-core-components
 jupyter
+numpy
+pandas
+plotly
