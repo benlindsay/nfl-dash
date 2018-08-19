@@ -1,0 +1,15 @@
+# general external requirements
+click
+python-dotenv>=0.5.1
+
+# project-specific external requirements
+dash
+dash-renderer
+dash-html-components
+dash-core-components
+numpy
+pandas
+plotly
+
+# heroku requirements
+gunicorn
