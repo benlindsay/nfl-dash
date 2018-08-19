@@ -10,7 +10,7 @@ PROFILE = default
 PROJECT_NAME = nfl-dash
 PYTHON_INTERPRETER = python
 NFL_SEASON = 2017
-PPR = True
+SCORING_METHOD = nfl.com
 
 #################################################################################
 # COMMANDS                                                                      #
@@ -25,13 +25,13 @@ requirements-3: test_environment
 
 ## Make Dataset
 raw-data: src/data/make_raw_data.py
-	$(PYTHON_INTERPRETER) $< $(NFL_SEASON) $(PPR)
+	$(PYTHON_INTERPRETER) $< $(NFL_SEASON) $(SCORING_METHOD)
 
 scores-one-year: requirements-2
-	$(PYTHON_INTERPRETER) src/data/make_dataset.py $(NFL_SEASON) $(NFL_SEASON)
+	$(PYTHON_INTERPRETER) src/data/make_dataset.py $(NFL_SEASON) $(NFL_SEASON) $(SCORING_METHOD)
 
 scores-all-years: requirements-2
-	$(PYTHON_INTERPRETER) src/data/make_dataset.py 2009 $(NFL_SEASON)
+	$(PYTHON_INTERPRETER) src/data/make_dataset.py 2009 $(NFL_SEASON) $(SCORING_METHOD)
 
 ## Delete all compiled Python files
 clean:
