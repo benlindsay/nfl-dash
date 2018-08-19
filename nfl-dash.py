@@ -20,25 +20,36 @@ with warnings.catch_warnings():
     import dash_core_components as dcc
     import dash_html_components as html
     import pandas as pd
-from plotly.colors import DEFAULT_PLOTLY_COLORS
 from dash.dependencies import Input, State, Output, Event
+from dotenv import load_dotenv
+from plotly.colors import DEFAULT_PLOTLY_COLORS
 import numpy as np
+import os
 
 from dashboard.components import Col
 from dashboard.components import Container
 from dashboard.components import Row
 
 
+load_dotenv()
+DEBUG=(os.getenv('DEBUG') == 'True')
+
 app = dash.Dash(__name__)
 app.title = 'Dash Skeleton'
 my_css_url = "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
 app.css.append_css({"external_url": my_css_url})
 BOOTSTRAP_SCREEN_SIZE='lg'
+if DEBUG:
+    ROOT_PATH = './'
+else:
+    ROOT_PATH = '/'
 
 # If you need to run your app locally
 #app.scripts.config.serve_locally = True
 
-scores_summary_csv_path = 'data/processed/scores-summary_2017-to-2017.csv'
+scores_summary_csv_path = os.path.join(
+    ROOT_PATH, 'data/processed/scores-summary_2017-to-2017.csv'
+)
 FULL_DF = pd.read_csv(scores_summary_csv_path).fillna(0)
 ALL_POSITIONS = ['QB', 'RB', 'WR', 'TE', 'K', 'DEFENSE']
 POSITION_COLORS = {p: c for p, c in zip(ALL_POSITIONS, DEFAULT_PLOTLY_COLORS)}
