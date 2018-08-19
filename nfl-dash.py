@@ -39,10 +39,11 @@ app.title = 'Dash Skeleton'
 my_css_url = "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
 app.css.append_css({"external_url": my_css_url})
 BOOTSTRAP_SCREEN_SIZE='lg'
-if DEBUG:
-    ROOT_PATH = './'
-else:
-    ROOT_PATH = '/'
+# if DEBUG:
+#     ROOT_PATH = './'
+# else:
+#     ROOT_PATH = '/'
+ROOT_PATH = './'
 
 # If you need to run your app locally
 #app.scripts.config.serve_locally = True
