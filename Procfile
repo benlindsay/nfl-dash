@@ -1,1 +1,1 @@
-web: gunicorn nfl-dash:app --log-file -
+web: gunicorn nfl-dash:server --log-file -

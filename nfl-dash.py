@@ -36,6 +36,7 @@ DEBUG=(os.getenv('DEBUG') == 'True')
 
 app = dash.Dash(__name__)
 app.title = 'Dash Skeleton'
+server = app.server
 my_css_url = "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
 app.css.append_css({"external_url": my_css_url})
 BOOTSTRAP_SCREEN_SIZE='lg'
