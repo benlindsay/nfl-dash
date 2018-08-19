@@ -37,7 +37,7 @@ def get_player_scoring_dict(method='nfl.com'):
       #calculate-the-fantasy-score-of-all-players-for-a-week
     """
     if method == 'nfl.com':
-        ppr = False
+        ppr = True
         player_scoring_dict = {
             # OFFENSE
             #   Passing Yards
