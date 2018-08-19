@@ -27,59 +27,107 @@ def team_points_allowed_fn(points_allowed):
         return -4
 
 
-def get_player_scoring_dict(ppr=True):
+def get_player_scoring_dict(method='nfl.com'):
     """Returns a dictionary of scoring rules for each individual player stat.
     All stats in this dictionary are part of the nflgame API except for
-    defense_two_pt_return. The stats in this dictionary match the order and
-    scoring in https://fantasydata.com/developers/fantasy-scoring-system/nfl
-    for individual players.
+    defense_two_pt_return. 
 
     Modified from
       https://github.com/BurntSushi/nflgame/wiki/Cookbook
       #calculate-the-fantasy-score-of-all-players-for-a-week
     """
-    player_scoring_dict = {
-        # OFFENSIVE PLAYERS
-        #   Passing
-        'passing_yds': lambda x: x * .04,
-        'passing_tds': lambda x: x * 4,
-        'passing_ints': lambda x: x * -2,
-        #   Rushing
-        'rushing_yds': lambda x: x * .1,
-        'rushing_tds': lambda x: x * 6,
-        #   Receiving
-        'receiving_rec': lambda x: x * 1 if ppr else x * 0.5,
-        'receiving_yds': lambda x: x * .1,
-        'receiving_tds': lambda x: x * 6,
-        #   2-point conversions
-        'passing_twoptm': lambda x: x * 2,
-        'rushing_twoptm': lambda x: x * 2,
-        'receiving_twoptm': lambda x: x * 2,
-        'kickret_tds': lambda x: x * 6,
-        #   Fumbles
-        'fumbles_lost': lambda x: x * -2,
-        'fumbles_rec_tds': lambda x: x * 6,
-        # INDIVIDUAL DEFENSIVE PLAYERS
-        #   Tackles/Hits
-        'defense_tkl': lambda x: x * 1,
-        'defense_ast': lambda x: x * 0.5,
-        'defense_sk': lambda x: x * 2,
-        'defense_sk_yds': lambda x: x * .1,
-        'defense_tkl_loss': lambda x: x * 1,
-        'defense_qbhit': lambda x: x * 1,
-        #   Pass Defense
-        'defense_pass_def': lambda x: x * 1,
-        'defense_int': lambda x: x * 3,
-        #   Run Defense
-        'defense_ffum': lambda x: x * 3,
-        'defense_frec': lambda x: x * 3,
-        #   Scoring on Defense
-        'defense_tds': lambda x: x * 6,
-        'defense_two_pt_return': lambda x: x * 2,  # This is a custom one
-        # KICKING
-        'kicking_xpmade': lambda x: x * 1,
-        'kicking_fgm_yds': lambda x: 5 if x >= 50 else 3,
-    }
+    if method == 'nfl.com':
+        ppr = False
+        player_scoring_dict = {
+            # OFFENSE
+            #   Passing Yards
+            'passing_yds': lambda x: x * .04,
+            #   Passing Touchdowns
+            'passing_tds': lambda x: x * 4,
+            #   Interceptions Thrown
+            'passing_ints': lambda x: x * -2,
+            #   Rushing Yards
+            'rushing_yds': lambda x: x * .1,
+            #   Rushing Touchdowns
+            'rushing_tds': lambda x: x * 6,
+            #   Receptions
+            'receiving_rec': lambda x: x * 1 if ppr else x * 0.5,
+            #   Receiving Yards
+            'receiving_yds': lambda x: x * .1,
+            #   Receiving Touchdowns
+            'receiving_tds': lambda x: x * 6,
+            #   Fumbles Recovered for TD
+            'fumbles_rec_tds': lambda x: x * 6,
+            #   Fumbles Lost
+            'fumbles_lost': lambda x: x * -2,
+            #   2-point conversions
+            'passing_twoptm': lambda x: x * 2,
+            'rushing_twoptm': lambda x: x * 2,
+            'receiving_twoptm': lambda x: x * 2,
+            # KICKING
+            #   PAT Made
+            'kicking_xpmade': lambda x: x * 1,
+            #   FG Made
+            'kicking_fgm_yds': lambda x: 5 if x >= 50 else (3 if x > 0 else 0),
+            # INDIVIDUAL DEFENSIVE PLAYERS
+            #   Blocked Kick (punt, FG, PAT)
+            'defense_puntblk': lambda x: x * 1,
+            'defense_fgblk': lambda x: x * 1,
+            'defense_xpblk': lambda x: x * 1,
+            #   Safety
+            'defense_safe': lambda x: x * 2,
+            #   Def 2-point Return
+            'defense_two_pt_return': lambda x: x * 2,  # This is a custom one
+        }
+    elif method == 'fantasydata.com':
+        # The stats in this dictionary match the order and scoring in
+        # https://fantasydata.com/developers/fantasy-scoring-system/nfl
+        # for individual players.
+        ppr = True
+        player_scoring_dict = {
+            # OFFENSIVE PLAYERS
+            #   Passing
+            'passing_yds': lambda x: x * .04,
+            'passing_tds': lambda x: x * 4,
+            'passing_ints': lambda x: x * -2,
+            #   Rushing
+            'rushing_yds': lambda x: x * .1,
+            'rushing_tds': lambda x: x * 6,
+            #   Receiving
+            'receiving_rec': lambda x: x * 1 if ppr else x * 0.5,
+            'receiving_yds': lambda x: x * .1,
+            'receiving_tds': lambda x: x * 6,
+            #   2-point conversions
+            'passing_twoptm': lambda x: x * 2,
+            'rushing_twoptm': lambda x: x * 2,
+            'receiving_twoptm': lambda x: x * 2,
+            'kickret_tds': lambda x: x * 6,
+            #   Fumbles
+            'fumbles_lost': lambda x: x * -2,
+            'fumbles_rec_tds': lambda x: x * 6,
+            # INDIVIDUAL DEFENSIVE PLAYERS
+            #   Tackles/Hits
+            'defense_tkl': lambda x: x * 1,
+            'defense_ast': lambda x: x * 0.5,
+            'defense_sk': lambda x: x * 2,
+            'defense_sk_yds': lambda x: x * .1,
+            'defense_tkl_loss': lambda x: x * 1,
+            'defense_qbhit': lambda x: x * 1,
+            #   Pass Defense
+            'defense_pass_def': lambda x: x * 1,
+            'defense_int': lambda x: x * 3,
+            #   Run Defense
+            'defense_ffum': lambda x: x * 3,
+            'defense_frec': lambda x: x * 3,
+            #   Scoring on Defense
+            'defense_tds': lambda x: x * 6,
+            'defense_two_pt_return': lambda x: x * 2,  # This is a custom one
+            # KICKING
+            'kicking_xpmade': lambda x: x * 1,
+            'kicking_fgm_yds': lambda x: 5 if x >= 50 else (3 if x > 0 else 0),
+        }
+    else:
+        raise ValueError("{} is not a valid value for `method`!".format(method))
     return player_scoring_dict
 
 
@@ -91,7 +139,10 @@ def get_team_scoring_dict():
     API except for `defense_two_pt_return` and `points_allowed`. The stats in
     this dictionary match the order and scoring in
     https://fantasydata.com/developers/fantasy-scoring-system/nfl for team
-    defense/special teams."""
+    defense/special teams.
+    
+    It also matches my NFL.com league's rules
+    """
     team_scoring_dict = {
         # TEAM DEFENSE / SPECIAL TEAMS
         'team_defense_sk': lambda x: x * 1,
@@ -125,20 +176,29 @@ def calc_scores(stats_df, team_scoring_dict, player_scoring_dict):
     )
     for stat in team_scoring_dict:
         print "Computing {}:".format(stat)
+        defense_rows = (scores_df['position'] == 'DEFENSE')
         if stat in scores_df.columns:
-            score_series = scores_df[stat].apply(team_scoring_dict[stat])
-            scores_df[stat + '_score'] = score_series
+            scores_df.loc[defense_rows, stat + '_score'] = (
+                scores_df.loc[defense_rows, stat].apply(
+                    team_scoring_dict[stat]
+                )
+            )
         else:
             print("Warning: {} not found in stats_df".format(stat))
     for stat in player_scoring_dict:
         print "Computing {}:".format(stat)
+        player_rows = (scores_df['position'] != 'DEFENSE')
         if stat in scores_df.columns:
-            score_series = scores_df[stat].apply(player_scoring_dict[stat])
-            scores_df[stat + '_score'] = score_series
+            scores_df.loc[player_rows, stat + '_score'] = (
+                scores_df.loc[player_rows, stat].apply(
+                    player_scoring_dict[stat]
+                )
+            )
         else:
             print("Warning: {} not found in stats_df".format(stat))
     scores_df['total_score'] = (
-        scores_df[team_score_columns + player_columns].sum(axis=1)
+        scores_df[team_score_columns + player_score_columns].sum(axis=1)
     )
     scores_df = scores_df[final_columns_order]
+    scores_df['week'] = scores_df['week'].astype(int)
     return scores_df

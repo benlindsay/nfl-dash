@@ -27,8 +27,8 @@ from src.scoring import get_team_scoring_dict
 
 @click.command()
 @click.argument('year', type=click.INT)
-@click.argument('ppr', type=click.BOOL)
-def main(year=2017, ppr=True):
+@click.argument('scoring_method', type=click.STRING)
+def main(year=2017, scoring_method='nfl.com'):
     """Compiles player and team stats relevant to fantasy scoring in
     <project_dir>/data/raw/<year>/<year>_week-<week>.csv
     """
@@ -57,7 +57,7 @@ def main(year=2017, ppr=True):
         df_week.to_csv(filename, index=False)
 
 
-def get_player_and_team_data(year, week, ppr=True):
+def get_player_and_team_data(year, week, scoring_method='nfl.com'):
     """Returns a dataframe of stats for all teams and players (with nonzero
     useful stats) for a given week in a given season.
 
@@ -66,7 +66,7 @@ def get_player_and_team_data(year, week, ppr=True):
     """
     df = pd.DataFrame()
     defense_two_pt_returns_dict = get_defense_two_pt_returns(year, week)
-    player_scoring_dict = get_player_scoring_dict(ppr=ppr)
+    player_scoring_dict = get_player_scoring_dict(method=scoring_method)
     team_scoring_dict = get_team_scoring_dict()
     for game in nflgame.games(year, week):
         for team, opp_score in zip([game.home, game.away],
@@ -74,9 +74,9 @@ def get_player_and_team_data(year, week, ppr=True):
             i_row = len(df)
             team = team
             df.loc[i_row, 'week'] = week
-            df.loc[i_row, 'player'] = 'DEFENSE'
             df.loc[i_row, 'team'] = team
             df.loc[i_row, 'position'] = 'DEFENSE'
+            df.loc[i_row, 'player'] = team + '-DEFENSE'
             for team_stat in team_scoring_dict:
                 if team_stat == 'team_defense_two_pt_return':
                     df.loc[i_row, team_stat] = (
@@ -93,9 +93,9 @@ def get_player_and_team_data(year, week, ppr=True):
     for player in players:
         i_row = len(df)
         df.loc[i_row, 'week'] = week
-        df.loc[i_row, 'player'] = player.name
         df.loc[i_row, 'team'] = player.team
         df.loc[i_row, 'position'] = player.guess_position
+        df.loc[i_row, 'player'] = player.name
         df.loc[i_row, 'defense_two_pt_return'] = (
             defense_two_pt_returns_dict['players'][player.name]
         )

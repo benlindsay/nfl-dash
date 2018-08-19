@@ -25,7 +25,8 @@ from src.scoring import get_team_scoring_dict
 @click.command()
 @click.argument('from_season', type=click.INT)
 @click.argument('to_season', type=click.INT)
-def main(from_season=2009, to_season=2017):
+@click.argument('scoring_method', type=click.STRING)
+def main(from_season=2009, to_season=2017, scoring_method='nfl.com'):
     """Combine and score data in <project_dir>/data/raw and output to
     <project_dir>/data/processed/scored-data.csv
     """
@@ -34,7 +35,7 @@ def main(from_season=2009, to_season=2017):
     project_dir = Path(__file__).resolve().parents[2]
     scores_csv_path = (
         project_dir / 'data' / 'processed' /
-        'scored-data_{}-to-{}.csv'.format(from_season, to_season)
+        'scores-summary_{}-to-{}.csv'.format(from_season, to_season)
     )
     raw_dir = project_dir / 'data' / 'raw'
     df_list = []
@@ -46,9 +47,22 @@ def main(from_season=2009, to_season=2017):
             df_list.append(df)
     full_df = pd.concat(df_list, sort=False).reset_index(drop=True)
     team_scoring_dict = get_team_scoring_dict()
-    player_scoring_dict = get_player_scoring_dict(ppr=True)
+    player_scoring_dict = get_player_scoring_dict(method=scoring_method)
     full_df = calc_scores(full_df, team_scoring_dict, player_scoring_dict)
-    full_df.to_csv(scores_csv_path, index=False)
+    full_df['week'] = full_df[['season', 'week']].apply(
+        lambda x: '{}-{:02d}'.format(x[0], x[1]), axis=1
+    )
+
+    summary_df = pd.pivot_table(data=full_df, index='player', columns='week', values='total_score').fillna(0)
+    week_cols = summary_df.columns
+    summary_df['season_total'] = summary_df[week_cols].sum(axis=1)
+    summary_df['week_avg'] = summary_df[week_cols].mean(axis=1)
+    summary_df['week_std'] = summary_df[week_cols].std(axis=1)
+    summary_df = summary_df.sort_values('season_total', ascending=False)
+    summary_df = summary_df.join(
+        full_df.groupby('player').first()[['team', 'position']]
+    )
+    summary_df.to_csv(scores_csv_path)
 
 
 if __name__ == '__main__':
