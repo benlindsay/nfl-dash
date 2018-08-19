@@ -44,14 +44,31 @@ ALL_POSITIONS = ['QB', 'RB', 'WR', 'TE', 'K', 'DEFENSE']
 POSITION_COLORS = {p: c for p, c in zip(ALL_POSITIONS, DEFAULT_PLOTLY_COLORS)}
 
 
-def get_updated_df(positions=ALL_POSITIONS, max_rows=50):
+def get_updated_df(positions=ALL_POSITIONS, num_rows=20, per_position=True, drafted_players=None):
     df = FULL_DF.copy()
     df = df[df['position'].isin(positions)].copy()
-    if len(df > max_rows):
-        df = df.iloc[:max_rows, :].copy()
+    if drafted_players is not None:
+        df = df[~df['player'].isin(drafted_players)].copy()
     columns = [
         'player', 'team', 'position', 'season_total', 'week_avg', 'week_std'
     ]
+    if per_position:
+        # Get num_rows rows per position
+        df = (
+            df.sort_values('week_avg', ascending=False)
+            .groupby('position')
+            .apply(lambda group: group.iloc[:num_rows, :])
+            .sort_values('week_avg', ascending=False)
+        )
+        # Get rid of annoying multilevel index after groupby/apply
+        df.index = df.index.droplevel()
+    else:
+        # Get a total of num_rows rows
+        df = (
+            df.iloc[:num_rows, :]
+            .sort_values('week_avg', ascending=False)
+            .copy()
+        )
     numerical_columns = ['season_total', 'week_avg', 'week_std']
     df = df[columns].copy()
     df.loc[:, numerical_columns] = df[numerical_columns].round(1)
@@ -80,13 +97,34 @@ app.layout = Container([
                             {'label': p, 'value': p} for p in ALL_POSITIONS
                         ],
                         values=[p for p in ALL_POSITIONS],
-                        labelStyle={'margin': '5px'}
+                        labelStyle={'margin': '5px'},
                     ),
                 ], bp=BOOTSTRAP_SCREEN_SIZE, size=12,
                 ),
                 Col([
-                    html.Label('Number of Rows', style={'margin': '5px'}),
-                    dcc.Input(id='nrows-input', type='number', value=50)
+                    html.Label('Number of Players', style={'margin': '5px'}),
+                    dcc.Input(id='nrows-input', type='number', value=20),
+                    dcc.RadioItems(
+                        id='count-method-radioitems',
+                        options=[
+                            {'label': 'Total', 'value': 'total'},
+                            {'label': 'Per Position', 'value': 'per-position'},
+                        ],
+                        value='per-position',
+                        labelStyle={'margin': '5px'},
+                    ),
+                    html.Label(
+                        'Drafted/Unavailable Players:',
+                        style={'margin': '5px'}
+                    ),
+                    dcc.Dropdown(
+                        id='drafted-players-dropdown',
+                        options=[
+                            {'label': p, 'value': p} for p in FULL_DF['player']
+                        ],
+                        multi=True,
+                        clearable=False,
+                    )
                 ], bp=BOOTSTRAP_SCREEN_SIZE, size=12,
                 )
             ]),
@@ -99,6 +137,24 @@ app.layout = Container([
     ]),
     html.Div(id='hidden-data', style={'display': 'none'}),
 ])
+
+@app.callback(
+    Output('hidden-data', 'children'),
+    [
+        Input('positions-checklist', 'values'),
+        Input('nrows-input', 'value'),
+        Input('count-method-radioitems', 'value'),
+        Input('drafted-players-dropdown', 'value'),
+    ],
+)
+def hidden_data_callback(positions, num_rows, count_method, drafted_players):
+    if count_method == 'per-position':
+        per_position = True
+    else:
+        per_position = False
+    df = get_updated_df(positions, num_rows, per_position, drafted_players)
+    return df.to_json(orient='split')
+
 
 @app.callback(
     Output('table', 'children'),
@@ -184,15 +240,6 @@ def graph_2_callback(jsonified_cleaned_data):
             'yaxis': {'title': 'Weely Avg.'},
         },
     }
-
-
-@app.callback(
-    Output('hidden-data', 'children'),
-    [Input('positions-checklist', 'values'), Input('nrows-input', 'value')],
-)
-def hidden_data_callback(positions, max_rows):
-    df = get_updated_df(positions, max_rows)
-    return df.to_json(orient='split')
 
 
 if __name__ == '__main__':
